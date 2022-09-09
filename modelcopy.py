@@ -2,8 +2,6 @@ import os
 from sqlalchemy import Column, String, create_engine
 from flask_sqlalchemy import SQLAlchemy
 import json
-
-# TODO: Makke sure the right database path is set for online vs local
 database_path = "postgresql://postgres:postgres@localhost:5432/postgres"
 # TESTCOMMENT
 # database_path = os.environ['DATABASE_URL']
