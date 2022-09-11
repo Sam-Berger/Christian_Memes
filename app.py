@@ -2,6 +2,8 @@ import os
 from flask import Flask, jsonify, abort, request
 from models import setup_db, Meme, Tag
 from flask_cors import CORS
+from auth import AuthError, requires_auth
+
 
 
 def create_app(test_config=None):
@@ -10,46 +12,48 @@ def create_app(test_config=None):
     setup_db(app)
     CORS(app)
 
-    @app.route('/')
-    def get_greeting():
-        excited = os.environ['EXCITED']
-        greeting = "Hello" 
-        if excited == 'true': 
-            greeting = greeting + "!!!!! You are doing great in this Udacity project."
-        return greeting
+    # @app.route('/')
+    # def get_greeting():
+    #     excited = os.environ['EXCITED']
+    #     greeting = "Hello" 
+    #     if excited == 'true': 
+    #         greeting = greeting + "!!!!! You are doing great in this Udacity project."
+    #     return greeting
 
-    @app.route('/coolkids')
-    def be_cool():
-        return "Be cool, man, be coooool! You're almost a FSND grad!"
+    # @app.route('/coolkids')
+    # def be_cool():
+    #     return "Be cool, man, be coooool! You're almost a FSND grad!"
 
 # MEME METHODS
     @app.route('/meme', methods=['POST'])
-    def create_meme():
+    @requires_auth('post:meme')
+    def create_meme(token):
         body = request.get_json()
         new_title=body.get('title')
         new_url=body.get('url')
         new_tags=body.get('tags')
+        
 
-        # try:
-        new_meme = Meme(
-            title=new_title, 
-            url = new_url,
+        try:
+            new_meme = Meme(
+                title=new_title, 
+                url = new_url,
+                )
+            for tag in new_tags:
+                new_tag = Tag.query.filter_by(id=tag).first()
+                new_meme.tags.append(new_tag)
+            new_meme.insert()
+
+            return jsonify(
+                {"success": True, "meme_id": new_meme.id}
             )
-        for tag in new_tags:
-            new_tag = Tag.query.filter_by(id=tag).first()
-            new_meme.tags.append(new_tag)
-        # possible need to iterate through and .append each time to get this right.
-        new_meme.insert()
-
-        return jsonify(
-            {"success": True, "meme_id": new_meme.id}
-        )
-        # except Exception:
-        #     abort(422)
+        except Exception:
+            abort(422)
 
 
     @app.route("/meme/<int:meme_id>", methods = ["DELETE"])
-    def delete_meme(meme_id):
+    @requires_auth('delete:meme')
+    def delete_meme(token, meme_id):
         try:
             meme = Meme.query.filter(Meme.id == meme_id).one_or_none()
             if meme is None:
@@ -65,22 +69,29 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-# TODO: add a new tag. need to add tags stuff in models
     @app.route("/meme/<int:meme_id>", methods = ["PATCH"])
-    def update_meme(meme_id):
-        print("ppp")
+    @requires_auth('patch:meme')
+    def update_meme(token, meme_id):
         body = request.get_json()
         print(body)
         new_title=body.get('title')
-        new_tags=body.get('tags')
+        tags_to_add=body.get('tags_to_add')
+        tags_to_remove=body.get('tags_to_remove')
+
 
         try:
             meme = Meme.query.filter(Meme.id == meme_id).one_or_none()
             print(meme)
             if new_title is not None:
                 meme.title = new_title
-            if new_tags is not None:
-                meme.recipe = new_tags
+            if tags_to_add is not None:
+                for tag in tags_to_add:
+                    new_tag = Tag.query.filter_by(id=tag).first()
+                    meme.tags.append(new_tag)
+            if tags_to_remove is not None:
+                for tag in tags_to_remove:
+                    tag_to_remove = Tag.query.filter_by(id=tag).first()
+                    meme.tags.remove(tag_to_remove)
             meme.update()
             return jsonify(
                 {
@@ -94,22 +105,22 @@ def create_app(test_config=None):
 
     @app.route('/meme')
     def get_memes():
-        print("hi")
         memes_query = Meme.query.all()
-        if len(memes_query) == 0:
-            abort(404)
         memes = []
         for meme in memes_query:
             memes.append(meme.view())
         return jsonify({
             "success": "true",
             "memes": memes
-        })        
+        })   
+
+
 
 
 # TAG METHODS
     @app.route('/tag', methods=['POST'])
-    def create_tag():
+    @requires_auth('post:tag')
+    def create_tag(token):
         body = request.get_json()
         new_name=body.get('name')
 
@@ -124,7 +135,8 @@ def create_app(test_config=None):
 
 
     @app.route("/tag/<int:tag_id>", methods = ["DELETE"])
-    def delete_tag(tag_id):
+    @requires_auth('delete:tag')
+    def delete_tag(token, tag_id):
         try:
             tag = Tag.query.filter(Tag.id == tag_id).one_or_none()
             if tag is None:
@@ -142,7 +154,8 @@ def create_app(test_config=None):
 
 
     @app.route("/tag/<int:tag_id>", methods = ["PATCH"])
-    def update_tag(tag_id):
+    @requires_auth('patch:tag')
+    def update_tag(token, tag_id):
         body = request.get_json()
         new_name=body.get('name')
 
@@ -166,8 +179,6 @@ def create_app(test_config=None):
     @app.route('/tag')
     def get_tags():
         tags_query = Tag.query.all()
-        if len(tags_query) == 0:
-            abort(404)
         tags = []
         for tag in tags_query:
             tags.append(tag.view())
@@ -175,6 +186,51 @@ def create_app(test_config=None):
             "success": "true",
             "tags": tags
         })   
+
+
+# Error Handlers
+    @app.errorhandler(400)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "bad request"
+        }), 400
+
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }), 422
+
+
+
+    @app.errorhandler(404)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "resource not found"
+        }), 404
+
+
+
+    @app.errorhandler(AuthError)
+    def handle_auth_error(ex):
+        response = jsonify(ex.error)
+        response.status_code = ex.status_code
+        return response
+
+    @app.errorhandler(500)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 500,
+            "message": "broken"
+        }), 500
 
     return app
 
