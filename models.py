@@ -5,7 +5,6 @@ import json
 
 # TODO: Makke sure the right database path is set for online vs local
 database_path = "postgresql://postgres:postgres@localhost:5432/postgres"
-# TESTCOMMENT
 # database_path = os.environ['DATABASE_URL']
 if database_path.startswith("postgres://"):
   database_path = database_path.replace("postgres://", "postgresql://", 1)
@@ -34,7 +33,6 @@ meme_tag = db.Table('meme_tag',
 
 
 class Meme(db.Model):
-    # __tablename__ = 'meme'
 
     id = Column(db.Integer, primary_key=True)
     title = Column(db.String, nullable=False)
@@ -47,7 +45,7 @@ class Meme(db.Model):
         inserts a new model into a database
         the model must have a unique id or null id
         EXAMPLE
-            meme = Meme(title=req_title, url=req_url)
+            meme = Meme(title=req_title, url=req_url, tags=[1,2])
             meme.insert()
     '''
 
@@ -89,22 +87,21 @@ class Meme(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'url': self.url
+            'url': self.url,
         }
       
     def __repr__(self):
       return f'<id: {self.id}, title: {self.title}, url:{self.url}>'
 
 class Tag(db.Model):
-    # __tablename__ = 'tag'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
-    # meme_id = db.Column(db.Integer, db.ForeignKey('meme.id'))
 
     def insert(self):
         db.session.add(self)
         db.session.commit()
+
 
     '''
     delete()
@@ -146,24 +143,3 @@ class Tag(db.Model):
     def __repr__(self):
       return f'<id: {self.id}, name: {self.name}>'
 
-
-# '''
-# Person
-# Have title and release year
-# '''
-# class Person(db.Model):  
-#   __tablename__ = 'People'
-
-#   id = Column(db.Integer, primary_key=True)
-#   name = Column(String)
-#   catchphrase = Column(String)
-
-#   def __init__(self, name, catchphrase=""):
-#     self.name = name
-#     self.catchphrase = catchphrase
-
-#   def format(self):
-#     return {
-#       'id': self.id,
-#       'name': self.name,
-#       'catchphrase': self.catchphrase}
