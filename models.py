@@ -6,8 +6,8 @@ import json
 # TODO: Makke sure the right database path is set for online vs local
 database_path = "postgresql://postgres:postgres@localhost:5432/postgres"
 # database_path = os.environ['DATABASE_URL']
-if database_path.startswith("postgres://"):
-  database_path = database_path.replace("postgres://", "postgresql://", 1)
+# if database_path.startswith("postgres://"):
+#   database_path = database_path.replace("postgres://", "postgresql://", 1)
 
 db = SQLAlchemy()
 
@@ -20,7 +20,39 @@ def setup_db(app, database_path=database_path):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
+    # db.create_all()
+
+def db_drop_and_create_all():
+    db.drop_all()
     db.create_all()
+    # add demo row which is helping in POSTMAN test
+    tag1 = Tag(name = "New Testament")
+    tag2 = Tag(name = "Old Testament")   
+
+    tag1.insert()
+    tag2.insert() 
+
+    meme1 = Meme(
+      title="NT Funny", 
+      url = "ntfunny.com",
+    )
+    meme2 = Meme(
+      title="OT Funny", 
+      url = "otfunny.com",
+    )
+    meme3 = Meme(
+      title="Bible Funny", 
+      url = "biblefunny.com",
+    )
+    meme1.tags.append(tag1)
+    meme2.tags.append(tag2)
+    meme3.tags.append(tag1)
+    meme3.tags.append(tag2)
+
+    meme1.insert()
+    meme2.insert()
+    meme3.insert() 
+
 
 #----------------------------------------------------------------------------#
 # Models.

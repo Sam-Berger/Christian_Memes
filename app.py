@@ -1,9 +1,8 @@
 import os
 from flask import Flask, jsonify, abort, request
-from models import setup_db, Meme, Tag
+from models import setup_db, db_drop_and_create_all,Meme, Tag
 from flask_cors import CORS
 from auth import AuthError, requires_auth
-
 
 
 def create_app(test_config=None):
@@ -12,17 +11,8 @@ def create_app(test_config=None):
     setup_db(app)
     CORS(app)
 
-    # @app.route('/')
-    # def get_greeting():
-    #     excited = os.environ['EXCITED']
-    #     greeting = "Hello" 
-    #     if excited == 'true': 
-    #         greeting = greeting + "!!!!! You are doing great in this Udacity project."
-    #     return greeting
-
-    # @app.route('/coolkids')
-    # def be_cool():
-    #     return "Be cool, man, be coooool! You're almost a FSND grad!"
+    # Uncomment out to initialize db and start from scratch
+    db_drop_and_create_all()
 
 # MEME METHODS
     @app.route('/meme', methods=['POST'])
@@ -63,7 +53,7 @@ def create_app(test_config=None):
             return jsonify(
                 {
                     "success": True,
-                    "delete": meme_id,
+                    "deleted": meme_id,
                 }
             )
         except:
@@ -73,7 +63,6 @@ def create_app(test_config=None):
     @requires_auth('patch:meme')
     def update_meme(token, meme_id):
         body = request.get_json()
-        print(body)
         new_title=body.get('title')
         tags_to_add=body.get('tags_to_add')
         tags_to_remove=body.get('tags_to_remove')
@@ -81,7 +70,6 @@ def create_app(test_config=None):
 
         try:
             meme = Meme.query.filter(Meme.id == meme_id).one_or_none()
-            print(meme)
             if new_title is not None:
                 meme.title = new_title
             if tags_to_add is not None:
@@ -96,7 +84,7 @@ def create_app(test_config=None):
             return jsonify(
                 {
                     "success": True,
-                    "memes": meme.view()
+                    "meme": meme.view()
                 }
             )
 
@@ -110,7 +98,7 @@ def create_app(test_config=None):
         for meme in memes_query:
             memes.append(meme.view())
         return jsonify({
-            "success": "true",
+            "success": True,
             "memes": memes
         })   
 
@@ -146,7 +134,7 @@ def create_app(test_config=None):
             return jsonify(
                 {
                     "success": True,
-                    "delete": tag_id,
+                    "deleted": tag_id,
                 }
             )
         except:
@@ -161,7 +149,6 @@ def create_app(test_config=None):
 
         try:
             tag = Tag.query.filter(Tag.id == tag_id).one_or_none()
-            print(tag)
             if new_name is not None:
                 tag.name = new_name
             tag.update()
@@ -183,7 +170,7 @@ def create_app(test_config=None):
         for tag in tags_query:
             tags.append(tag.view())
         return jsonify({
-            "success": "true",
+            "success": True,
             "tags": tags
         })   
 
