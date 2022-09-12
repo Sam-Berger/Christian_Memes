@@ -1,13 +1,13 @@
+import os
 import json
 from flask import request, abort
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
 
-# TODO put my data in here
-AUTH0_DOMAIN = 'dev-6gi0ypyb.us.auth0.com'
-ALGORITHMS = ['RS256']
-API_AUDIENCE = 'christian-meme-api'
+AUTH0_DOMAIN = os.environ['AUTH0_DOMAIN']
+ALGORITHMS = os.environ['ALGORITHMS']
+API_AUDIENCE = os.environ['API_AUDIENCE']
 
 ## AuthError Exception
 '''
