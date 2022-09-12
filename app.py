@@ -14,6 +14,10 @@ def create_app(test_config=None):
     # Uncomment out to initialize db and start from scratch
     db_drop_and_create_all()
 
+    @app.route('/')
+    def hello():
+        return jsonify ({"test":"hi"})
+
 # MEME METHODS
     @app.route('/meme', methods=['POST'])
     @requires_auth('post:meme')
