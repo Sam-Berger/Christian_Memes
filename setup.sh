@@ -2,8 +2,7 @@
 # local db
 # export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 # cloud db
-# export DATABASE_URL="postgres://vwynypisrkhafx:602db10345c378c5db37debbcfcf3fb057b5ef4b9c742381fd39cb3aa044eb79@ec2-18-208-55-135.compute-1.amazonaws.com:5432/dbam6nkoi8f6oq"
-export DATABASE_URL="postgres://bexjucssuabich:2d5072ed72ec04e103a908cebbca646edf4553cb1cf022f1e8f727c94b9171db@ec2-52-200-5-135.compute-1.amazonaws.com:5432/d4u8k6papgq2lk"
+export DATABASE_URL="postgres://itavultipjrwtm:4a8fbdc1c3b1d0a7883166527b26677bcd038e68e66ad501fa38d0939b1f27ff@ec2-44-207-253-50.compute-1.amazonaws.com:5432/de3sdrvr6h8f56"
 export EXCITED="true"
 export AUTH0_DOMAIN='dev-6gi0ypyb.us.auth0.com'
 export ALGORITHMS=['RS256']
