@@ -12,7 +12,7 @@ def create_app(test_config=None):
     CORS(app)
 
     # Uncomment out to initialize db and start from scratch
-    db_drop_and_create_all()
+    # db_drop_and_create_all()
 
     @app.route('/')
     def hello():
