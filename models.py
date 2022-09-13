@@ -23,7 +23,7 @@ def setup_db(app, database_path=database_path):
     # db.create_all()
 
 def db_drop_and_create_all():
-    db.drop_all()
+    db.drop_all() 
     db.create_all()
     # add demo row which is helping in POSTMAN test
     tag1 = Tag(name = "New Testament")
