@@ -4,8 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 
 # TODO: Makke sure the right database path is set for online vs local
-# database_path = "postgresql://postgres:postgres@localhost:5432/postgres"
-database_path = os.environ['DATABASE_URL']
+database_path = "postgresql://postgres:postgres@localhost:5432/postgres"
+# database_path = os.environ['DATABASE_URL']
 # if database_path.startswith("postgres://"):
 #   database_path = database_path.replace("postgres://", "postgresql://", 1)
 
@@ -65,6 +65,7 @@ meme_tag = db.Table('meme_tag',
 
 
 class Meme(db.Model):
+    __tablename__ = 'meme'
 
     id = Column(db.Integer, primary_key=True)
     title = Column(db.String, nullable=False)
@@ -126,6 +127,7 @@ class Meme(db.Model):
       return f'<id: {self.id}, title: {self.title}, url:{self.url}>'
 
 class Tag(db.Model):
+    __tablename__ = 'tag'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
